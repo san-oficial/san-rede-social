@@ -1,243 +1,396 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SAN - Rede Social</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: #f2f4f7; color: #111; }
-    button, input, textarea { font: inherit; }
-    button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; }
-    
-    /* TELAS DE AUTENTICAÇÃO (LOGIN E CADASTRO) */
-    .tela-auth { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1d2671, #c33764); padding: 20px; }
-    .caixa-auth { background: #fff; width: 100%; max-width: 400px; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-    .logo-auth { text-align: center; font-size: 32px; font-weight: 900; color: #2864dc; margin-bottom: 5px; }
-    .subtitulo-auth { text-align: center; color: #666; margin-bottom: 20px; font-size: 14px; }
-    
-    .campo { margin-bottom: 15px; }
-    .campo label { display: block; font-size: 12px; font-weight: 700; color: #444; margin-bottom: 5px; text-transform: uppercase; }
-    .entrada { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #ddd; outline: none; transition: 0.2s; }
-    .entrada:focus { border-color: #2864dc; }
-    
-    .botao-primario { width: 100%; padding: 12px; background: #2864dc; color: #fff; font-size: 16px; margin-top: 10px; }
-    .botao-primario:hover { background: #1f4eb2; }
-    .botao-secundario { width: 100%; padding: 12px; background: #e4e6eb; color: #111; font-size: 16px; margin-top: 10px; }
-    .botao-secundario:hover { background: #d8dadf; }
-    
-    .mensagem-erro { color: #d93025; font-size: 13px; margin-top: 10px; text-align: center; display: none; }
-    
-    /* APLICAÇÃO PRINCIPAL */
-    #aplicativo { display: none; min-height: 100vh; background: #f2f4f7; }
-    .barra-superior { height: 60px; background: #fff; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: sticky; top: 0; z-index: 100; }
-    .logotipo { font-size: 24px; font-weight: 800; color: #2864dc; }
-    .acoes-topo { display: flex; gap: 10px; }
-    .botao-sair { padding: 8px 16px; background: #ffebe9; color: #d93025; }
-    
-    .feed { width: 100%; max-width: 600px; margin: 20px auto; padding: 0 15px; }
-    .caixa-post { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .caixa-post textarea { width: 100%; border: 1px solid #eee; border-radius: 8px; padding: 10px; resize: none; height: 80px; outline: none; }
-    .caixa-post button { float: right; margin-top: 10px; padding: 8px 20px; background: #2864dc; color: #fff; }
-    
-    .post { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
-    .autor-post { font-weight: 700; color: #333; margin-bottom: 5px; }
-    .conteudo-post { font-size: 15px; color: #222; line-height: 1.4; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAN — Rede Social</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- SDKs do Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+body.auth-mode {
+    min-height:100vh;
+    background: linear-gradient(135deg, #2864dc, #6638e8, #e91e63, #f44336, #ff9800, #20c878, #00bcd4, #000000) !important;
+    background-size: 500% 500% !important;
+    display:flex; justify-content:center; align-items:center; padding:10px;
+    animation: fundoMulticolorido 15s ease infinite !important;
+}
+
+@keyframes fundoMulticolorido{
+    0%{ background-position:0% 50%; }
+    50%{ background-position:100% 50%; }
+    100%{ background-position:0% 50%; }
+}
+
+body.app-mode {
+    min-height:100vh; background: #eef2f5 !important; animation: none !important;
+    display:flex; justify-content:center; align-items:flex-start; padding:10px;
+}
+
+.container{
+    width:100%; max-width:450px; background:#ffffff; border-radius:25px;
+    padding:20px 18px; box-shadow:0 10px 30px rgba(0,0,0,.08);
+    overflow: hidden; position: relative; min-height: 580px;
+}
+
+.logo-container { text-align: center; margin-bottom: 20px; }
+.logo{
+    display:inline-block; font-size:52px; font-weight:900; letter-spacing:-4px;
+    background:linear-gradient(90deg, #2864dc, #6638e8, #ff1493, #00c8ff);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+.subtitle{ color:#666; font-size:14px; text-align: center; margin-top: -10px; margin-bottom: 20px; }
+
+.form{ display:none; text-align: center; }
+.form.active{ display:block !important; }
+.form h2{ color:#172033; font-size:22px; margin-bottom:15px; }
+
+input, textarea{
+    width:100%; padding:12px 16px; margin-bottom:10px; border:1px solid #d5d8df;
+    border-radius:15px; background:#f9fafb; font-size:14px; outline:none;
+}
+
+button.btn-main{ width:100%; padding:12px; border:0; border-radius:15px; font-size:15px; font-weight:bold; cursor:pointer; margin-top:5px; }
+.btn-primary{ background:linear-gradient(135deg, #2864dc, #6638e8); color:white; }
+.btn-secondary{ background:#eef2fc; color:#2864dc; margin-top:10px; }
+.btn-back{ background:transparent; color:#2864dc; margin-top:10px; border: none; cursor: pointer; }
+
+.app-screen { display:none; background: #ffffff; margin: -20px -18px; padding-bottom: 70px; }
+.app-screen.active { display:block !important; }
+
+.navbar-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px; background: #fff; border-bottom: 1px solid #eef0f4;
+    position: sticky; top: 0; z-index: 10;
+}
+
+.nav-logo { font-size: 24px; font-weight: 900; color: #2864dc; }
+.top-icon-btn {
+    background: #f0f2f5; border: none; width: 36px; height: 36px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: #2864dc; cursor: pointer;
+}
+
+.tab-content { display: none; padding: 15px; background: #f8fafc; min-height: 480px; }
+.tab-content.active { display: block !important; }
+
+.navbar-bottom {
+    position: absolute; bottom: 0; left: 0; width: 100%; background: #fff;
+    display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #eef0f4; z-index: 20;
+}
+
+.nav-item { background: none; border: none; color: #8e9aaf; font-size: 20px; cursor: pointer; }
+.nav-item.active { color: #2864dc; }
+
+.create-post-card, .post-card, .profile-header {
+    background: #fff; border-radius: 18px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.create-post-card textarea { height: 60px; resize: none; }
+.post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.avatar {
+    width: 40px; height: 40px; border-radius: 50%; background: #2864dc; color: white;
+    display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;
+}
+.post-user-info h4 { font-size: 14px; color: #172033; }
+.post-user-info span { font-size: 11px; color: #8e9aaf; }
+.post-content { font-size: 14px; color: #333; margin-bottom: 10px; line-height: 1.4; }
+.post-image { width: 100%; max-height: 250px; object-fit: cover; border-radius: 12px; margin-bottom: 10px; }
+
+.file-upload-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px;
+    background: #f0f2f5; border-radius: 12px; font-size: 13px; color: #2864dc; cursor: pointer;
+    margin-bottom: 10px; border: 1px dashed #2864dc;
+}
+
+.post-actions { display: flex; gap: 20px; border-top: 1px solid #f4f6f9; padding-top: 10px; }
+.action-btn { background: none; border: none; color: #666; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.action-btn.liked { color: #e91e63; }
+
+.comments-section { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee; font-size: 12px; }
+.comment-item { margin-bottom: 5px; background: #f8f9fa; padding: 6px 10px; border-radius: 8px; }
+.profile-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; font-size: 32px; }
+.message { display:none; margin-top:10px; padding:8px; border-radius:8px; font-size:12px; }
+.message.error { display:block; background:#ffe8e8; color:#c62828; }
+</style>
 </head>
-<body>
+<body class="auth-mode">
 
-  <!-- TELA DE LOGIN -->
-  <div id="telaLogin" class="tela-auth">
-    <div class="caixa-auth">
-      <div class="logo-auth">SAN</div>
-      <div class="subtitulo-auth">Entre para se conectar</div>
-      
-      <div class="campo">
-        <label>E-mail ou Utilizador</label>
-        <input type="text" id="loginUsuario" class="entrada" placeholder="Digite seu e-mail ou utilizador">
+<div class="container">
+  <div id="authSection">
+      <div class="logo-container">
+          <div class="logo">SAN</div>
+          <div class="subtitle">Sua rede social brasileira</div>
       </div>
-      <div class="campo">
-        <label>Palavra-passe</label>
-        <input type="password" id="loginSenha" class="entrada" placeholder="Digite sua palavra-passe">
+
+      <div id="loginForm" class="form active">
+          <h2>Entrar</h2>
+          <input type="email" id="loginEmail" placeholder="E-mail">
+          <input type="password" id="loginPassword" placeholder="Senha">
+          <button type="button" class="btn-main btn-primary" onclick="fazerLogin()">Entrar</button>
+          <button type="button" class="btn-main btn-secondary" onclick="mostrarCadastro()">Criar nova conta</button>
+          <div id="loginMsg" class="message"></div>
       </div>
-      
-      <div id="erroLogin" class="mensagem-erro">Utilizador ou palavra-passe incorretos!</div>
-      
-      <button class="botao-primario" onclick="fazerLogin()">Entrar</button>
-      <button class="botao-secundario" onclick="mostrarTela('telaCadastro')">Criar nova conta</button>
-    </div>
+
+      <div id="registerForm" class="form">
+          <h2>Criar nova conta</h2>
+          <input type="text" id="registerName" placeholder="Nome completo">
+          <input type="email" id="registerEmail" placeholder="E-mail">
+          <input type="password" id="registerPassword" placeholder="Senha">
+          <button type="button" class="btn-main btn-primary" onclick="fazerCadastro()">Criar conta</button>
+          <button type="button" class="btn-back" onclick="mostrarLogin()">← Voltar para entrar</button>
+          <div id="regMsg" class="message"></div>
+      </div>
   </div>
 
-  <!-- TELA DE CADASTRO -->
-  <div id="telaCadastro" class="tela-auth" style="display: none;">
-    <div class="caixa-auth">
-      <div class="logo-auth">SAN</div>
-      <div class="subtitulo-auth">Crie a sua nova conta</div>
-      
-      <div class="campo">
-        <label>Nome Completo</label>
-        <input type="text" id="cadNome" class="entrada" placeholder="Seu nome completo">
+  <div id="appScreen" class="app-screen">
+      <div class="navbar-top">
+          <div class="nav-logo">SAN</div>
+          <div class="top-icons">
+              <button class="top-icon-btn" onclick="fazerLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+          </div>
       </div>
-      <div class="campo">
-        <label>Nome de Utilizador (@)</label>
-        <input type="text" id="cadUsuario" class="entrada" placeholder="ex: lucas_san">
+
+      <div id="tabHome" class="tab-content active">
+          <div class="create-post-card">
+              <textarea id="postText" placeholder="O que está a acontecer?"></textarea>
+              <label class="file-upload-btn">
+                  <i class="fa-solid fa-image"></i> <span id="fileLabel">Anexar foto da galeria</span>
+                  <input type="file" id="postImageFile" accept="image/*" style="display:none;" onchange="converterImagem()">
+              </label>
+              <button class="btn-main btn-primary" onclick="criarPostFirebase()">Publicar</button>
+          </div>
+          <div id="postsFeed"></div>
       </div>
-      <div class="campo">
-        <label>E-mail</label>
-        <input type="email" id="cadEmail" class="entrada" placeholder="seu@email.com">
+
+      <div id="tabSearch" class="tab-content">
+          <input type="text" id="searchInput" placeholder="Pesquisar publicações...">
       </div>
-      <div class="campo">
-        <label>Palavra-passe</label>
-        <input type="password" id="cadSenha" class="entrada" placeholder="Crie uma palavra-passe">
+
+      <div id="tabNotifications" class="tab-content">
+          <h3>Notificações</h3>
+          <div class="comment-item" style="margin-top:10px;"><b>SAN:</b> Rede social online conectada em tempo real!</div>
       </div>
-      
-      <div id="erroCadastro" class="mensagem-erro">Por favor, preencha todos os campos!</div>
-      
-      <button class="botao-primario" onclick="cadastrarUsuario()">Cadastrar</button>
-      <button class="botao-secundario" onclick="mostrarTela('telaLogin')">Já tenho uma conta</button>
-    </div>
+
+      <div id="tabProfile" class="tab-content">
+          <div class="profile-header">
+              <div id="profileAvatar" class="avatar profile-avatar">U</div>
+              <h3 id="profileName">A carregar...</h3>
+              <p id="profileBio" style="font-size:13px; color:#666; margin:5px 0 15px;">Sem biografia definida.</p>
+              <input type="text" id="editBioInput" placeholder="Editar biografia...">
+              <button class="btn-main btn-secondary" onclick="salvarBio()">Guardar Perfil</button>
+          </div>
+      </div>
+
+      <div class="navbar-bottom">
+          <button class="nav-item active" onclick="mudarAba('Home', this)"><i class="fa-solid fa-house"></i></button>
+          <button class="nav-item" onclick="mudarAba('Search', this)"><i class="fa-solid fa-magnifying-glass"></i></button>
+          <button class="nav-item" onclick="mudarAba('Notifications', this)"><i class="fa-solid fa-bell"></i></button>
+          <button class="nav-item" onclick="mudarAba('Profile', this)"><i class="fa-solid fa-user"></i></button>
+      </div>
   </div>
+</div>
 
-  <!-- APLICAÇÃO PRINCIPAL (FEED) -->
-  <div id="aplicativo">
-    <div class="barra-superior">
-      <div class="logotipo">SAN</div>
-      <div class="acoes-topo">
-        <button class="botao-sair" onclick="sair()">Sair</button>
-      </div>
-    </div>
-    
-    <div class="feed">
-      <div class="caixa-post">
-        <textarea id="textoPost" placeholder="O que está a acontecer?"></textarea>
-        <button onclick="publicar()">Publicar</button>
-        <div style="clear: both;"></div>
-      </div>
-      
-      <div id="listaPosts">
-        <!-- Posts aparecerão aqui -->
-      </div>
-    </div>
-  </div>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC5oZBuiU21MeUcIGXYHYiRlvog99bli-c",
+    authDomain: "san-e4e0b.firebaseapp.com",
+    projectId: "san-e4e0b",
+    storageBucket: "san-e4e0b.firebasestorage.app",
+    messagingSenderId: "948679953856",
+    appId: "1:948679953856:web:67f015a553b704739ccc25"
+  };
 
-  <script>
-    // Inicialização do Banco de Dados Local (LocalStorage)
-    if (!localStorage.getItem('san_usuarios')) {
-      const usuariosIniciais = [
-        { nome: 'Utilizador Teste', usuario: 'admin', email: 'admin@san.com', senha: '123' }
-      ];
-      localStorage.setItem('san_usuarios', JSON.stringify(usuariosIniciais));
-    }
-    
-    if (!localStorage.getItem('san_posts')) {
-      const postsIniciais = [
-        { autor: 'SAN Oficial', conteudo: 'Bem-vindo à rede social SAN! Crie uma conta ou faça posts para testar.' }
-      ];
-      localStorage.setItem('san_posts', JSON.stringify(postsIniciais));
-    }
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-    let usuarioAtual = null;
+  let usuarioAtual = null;
+  let imagemBase64 = "";
 
-    function mostrarTela(idTela) {
-      document.getElementById('telaLogin').style.display = 'none';
-      document.getElementById('telaCadastro').style.display = 'none';
-      document.getElementById('aplicativo').style.display = 'none';
-      
-      document.getElementById(idTela).style.display = 'flex';
-      if (idTela === 'aplicativo') document.getElementById('aplicativo').style.display = 'block';
-    }
-
-    function cadastrarUsuario() {
-      const nome = document.getElementById('cadNome').value.trim();
-      const usuario = document.getElementById('cadUsuario').value.trim().toLowerCase();
-      const email = document.getElementById('cadEmail').value.trim().toLowerCase();
-      const senha = document.getElementById('cadSenha').value;
-      const erro = document.getElementById('erroCadastro');
-
-      if (!nome || !usuario || !email || !senha) {
-        erro.innerText = 'Por favor, preencha todos os campos!';
-        erro.style.display = 'block';
-        return;
-      }
-
-      const usuarios = JSON.parse(localStorage.getItem('san_usuarios'));
-      
-      const jaExiste = usuarios.some(u => u.usuario === usuario || u.email === email);
-      if (jaExiste) {
-        erro.innerText = 'Utilizador ou e-mail já cadastrado!';
-        erro.style.display = 'block';
-        return;
-      }
-
-      const novoUsuario = { nome, usuario, email, senha };
-      usuarios.push(novoUsuario);
-      localStorage.setItem('san_usuarios', JSON.stringify(usuarios));
-
-      alert('Conta criada com sucesso! Faça login para continuar.');
-      document.getElementById('cadNome').value = '';
-      document.getElementById('cadUsuario').value = '';
-      document.getElementById('cadEmail').value = '';
-      document.getElementById('cadSenha').value = '';
-      erro.style.display = 'none';
-      mostrarTela('telaLogin');
-    }
-
-    function fazerLogin() {
-      const login = document.getElementById('loginUsuario').value.trim().toLowerCase();
-      const senha = document.getElementById('loginSenha').value;
-      const erro = document.getElementById('erroLogin');
-
-      const usuarios = JSON.parse(localStorage.getItem('san_usuarios'));
-      const usuarioEncontrado = usuarios.find(u => (u.usuario === login || u.email === login) && u.senha === senha);
-
-      if (usuarioEncontrado) {
-        usuarioAtual = usuarioEncontrado;
-        erro.style.display = 'none';
-        carregarPosts();
-        mostrarTela('aplicativo');
+  auth.onAuthStateChanged(user => {
+      if (user) {
+          usuarioAtual = user;
+          document.body.className = "app-mode";
+          document.getElementById("authSection").style.display = "none";
+          document.getElementById("appScreen").classList.add("active");
+          carregarPerfil();
+          ouvirPostsTempoReal();
       } else {
-        erro.style.display = 'block';
+          usuarioAtual = null;
+          document.body.className = "auth-mode";
+          document.getElementById("appScreen").classList.remove("active");
+          document.getElementById("authSection").style.display = "block";
       }
-    }
+  });
 
-    function sair() {
-      usuarioAtual = null;
-      document.getElementById('loginUsuario').value = '';
-      document.getElementById('loginSenha').value = '';
-      mostrarTela('telaLogin');
-    }
+  function mostrarCadastro(){
+      document.getElementById("loginForm").classList.remove("active");
+      document.getElementById("registerForm").classList.add("active");
+  }
 
-    function publicar() {
-      const texto = document.getElementById('textoPost').value.trim();
-      if (!texto) return;
+  function mostrarLogin(){
+      document.getElementById("registerForm").classList.remove("active");
+      document.getElementById("loginForm").classList.add("active");
+  }
 
-      const posts = JSON.parse(localStorage.getItem('san_posts'));
-      posts.unshift({
-        autor: usuarioAtual ? usuarioAtual.nome : 'Anónimo',
-        conteudo: texto
+  function mudarAba(nomeAba, elementoBtn) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('tab' + nomeAba).classList.add('active');
+      elementoBtn.classList.add('active');
+  }
+
+  async function fazerLogin(){
+      const email = document.getElementById("loginEmail").value.trim();
+      const pass = document.getElementById("loginPassword").value;
+      try {
+          await auth.signInWithEmailAndPassword(email, pass);
+      } catch (err) {
+          document.getElementById("loginMsg").innerText = err.message;
+          document.getElementById("loginMsg").className = "message error";
+      }
+  }
+
+  async function fazerCadastro(){
+      const nome = document.getElementById("registerName").value.trim();
+      const email = document.getElementById("registerEmail").value.trim();
+      const pass = document.getElementById("registerPassword").value;
+      try {
+          const userCred = await auth.createUserWithEmailAndPassword(email, pass);
+          await db.collection("users").doc(userCred.user.uid).set({
+              nome: nome,
+              bio: "Utilizador da rede SAN",
+              criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+          });
+      } catch (err) {
+          document.getElementById("regMsg").innerText = err.message;
+          document.getElementById("regMsg").className = "message error";
+      }
+  }
+
+  function fazerLogout(){ auth.signOut(); }
+
+  function converterImagem() {
+      const file = document.getElementById("postImageFile").files[0];
+      if (file) {
+          document.getElementById("fileLabel").innerText = file.name.substring(0, 15) + "...";
+          const reader = new FileReader();
+          reader.onloadend = () => { imagemBase64 = reader.result; };
+          reader.readAsDataURL(file);
+      }
+  }
+
+  async function criarPostFirebase() {
+      const texto = document.getElementById("postText").value.trim();
+      if (!texto && !imagemBase64) return;
+
+      const userDoc = await db.collection("users").doc(usuarioAtual.uid).get();
+      const nomeAutor = userDoc.exists ? userDoc.data().nome : "Anónimo";
+
+      await db.collection("posts").add({
+          uid: usuarioAtual.uid,
+          autor: nomeAutor,
+          texto: texto,
+          imagem: imagemBase64,
+          likes: [],
+          comentarios: [],
+          criadoEm: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      localStorage.setItem('san_posts', JSON.stringify(posts));
-      document.getElementById('textoPost').value = '';
-      carregarPosts();
-    }
+      document.getElementById("postText").value = "";
+      document.getElementById("postImageFile").value = "";
+      document.getElementById("fileLabel").innerText = "Anexar foto da galeria";
+      imagemBase64 = "";
+  }
 
-    function carregarPosts() {
-      const posts = JSON.parse(localStorage.getItem('san_posts'));
-      const container = document.getElementById('listaPosts');
-      container.innerHTML = '';
+  function ouvirPostsTempoReal() {
+      db.collection("posts").orderBy("criadoEm", "desc").onSnapshot(snapshot => {
+          const feed = document.getElementById("postsFeed");
+          feed.innerHTML = "";
 
-      posts.forEach(post => {
-        const div = document.createElement('div');
-        div.className = 'post';
-        div.innerHTML = `
-          <div class="autor-post">${post.autor}</div>
-          <div class="conteudo-post">${post.conteudo}</div>
-        `;
-        container.appendChild(div);
+          snapshot.forEach(doc => {
+              const p = doc.data();
+              const id = doc.id;
+              const curtiu = p.likes && p.likes.includes(usuarioAtual.uid);
+              const totalLikes = p.likes ? p.likes.length : 0;
+              let imgTag = p.imagem ? `<img src="${p.imagem}" class="post-image">` : "";
+              let coms = (p.comentarios || []).map(c => `<div class="comment-item"><b>${c.autor}:</b> ${c.texto}</div>`).join("");
+
+              feed.innerHTML += `
+                  <div class="post-card">
+                      <div class="post-header">
+                          <div class="avatar">${p.autor.charAt(0).toUpperCase()}</div>
+                          <div class="post-user-info">
+                              <h4>${p.autor}</h4>
+                              <span>Em tempo real</span>
+                          </div>
+                      </div>
+                      <div class="post-content">${p.texto}</div>
+                      ${imgTag}
+                      <div class="post-actions">
+                          <button class="action-btn ${curtiu ? 'liked' : ''}" onclick="alternarLike('${id}', ${curtiu})">
+                              <i class="fa-${curtiu ? 'solid' : 'regular'} fa-heart"></i> ${totalLikes}
+                          </button>
+                      </div>
+                      <div class="comments-section">
+                          ${coms}
+                          <div style="display:flex; gap:5px; margin-top:8px;">
+                              <input type="text" id="comInput-${id}" placeholder="Comentar..." style="padding:6px 10px; margin:0; font-size:12px;">
+                              <button class="btn-main btn-primary" style="padding:6px 12px; width:auto; font-size:12px; margin:0;" onclick="comentar('${id}')">Enviar</button>
+                          </div>
+                      </div>
+                  </div>
+              `;
+          });
       });
-    }
-  </script>
+  }
+
+  async function alternarLike(id, jaCurtiu) {
+      const ref = db.collection("posts").doc(id);
+      if (jaCurtiu) {
+          await ref.update({ likes: firebase.firestore.FieldValue.arrayRemove(usuarioAtual.uid) });
+      } else {
+          await ref.update({ likes: firebase.firestore.FieldValue.arrayUnion(usuarioAtual.uid) });
+      }
+  }
+
+  async function comentar(id) {
+      const input = document.getElementById(`comInput-${id}`);
+      const txt = input.value.trim();
+      if (!txt) return;
+
+      const userDoc = await db.collection("users").doc(usuarioAtual.uid).get();
+      const nomeAutor = userDoc.exists ? userDoc.data().nome : "Anónimo";
+
+      await db.collection("posts").doc(id).update({
+          comentarios: firebase.firestore.FieldValue.arrayUnion({ autor: nomeAutor, texto: txt })
+      });
+      input.value = "";
+  }
+
+  async function carregarPerfil() {
+      const doc = await db.collection("users").doc(usuarioAtual.uid).get();
+      if(doc.exists) {
+          const data = doc.data();
+          document.getElementById("profileName").innerText = data.nome || "Utilizador";
+          document.getElementById("profileBio").innerText = data.bio || "Sem biografia.";
+          document.getElementById("profileAvatar").innerText = (data.nome || "U").charAt(0).toUpperCase();
+      }
+  }
+
+  async function salvarBio() {
+      const b = document.getElementById("editBioInput").value.trim();
+      if(!b) return;
+      await db.collection("users").doc(usuarioAtual.uid).update({ bio: b });
+      document.getElementById("editBioInput").value = "";
+      carregarPerfil();
+  }
+</script>
 </body>
 </html>
