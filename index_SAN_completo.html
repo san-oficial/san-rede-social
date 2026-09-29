@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAN — Rede Social</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+body{background:#f2f4f7;color:#111}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#4b20d8,#1769e0,#ec258f,#ff8a00)}
+.loginBox{width:100%;max-width:400px;background:#fff;border-radius:25px;padding:30px;box-shadow:0 15px 50px #0004}
+.logoLogin{text-align:center;font-size:48px;font-weight:800;color:#2864dc;margin-bottom:8px}
+.loginSubtitle{text-align:center;color:#777;margin-bottom:25px}
+.input{width:100%;padding:15px;border:1px solid #ddd;border-radius:12px;margin-bottom:12px;outline:0}
+.primaryBtn,.secondaryBtn{width:100%;border:0;padding:14px;border-radius:12px;font-weight:bold}
+.primaryBtn{background:#2864dc;color:white}.secondaryBtn{margin-top:10px;background:#eef1f5}
+#app{display:none;min-height:100vh;background:#f2f4f7}
+.topbar{height:62px;background:#fff;border-bottom:1px solid #ddd;display:flex;align-items:center;justify-content:space-between;padding:0 15px;position:sticky;top:0;z-index:100}
+.logo{font-size:29px;font-weight:800;color:#2864dc}
+.topActions{display:flex;gap:7px}.topButton{width:39px;height:39px;border:0;border-radius:50%;background:#f0f2f5}
+.feed{width:100%;max-width:680px;margin:auto}
+.page{display:none}.page.active{display:block}
+.stories{background:#fff;padding:15px 10px;display:flex;gap:14px;overflow-x:auto;border-bottom:1px solid #e5e5e5}
+.story{min-width:70px;text-align:center}.storyAvatar{width:64px;height:64px;padding:3px;border-radius:50%;margin:auto;background:linear-gradient(135deg,#ff1680,#2864dc,#8d21c9)}
+.storyAvatarInner{width:100%;height:100%;border-radius:50%;background:#2864dc;border:3px solid white;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold}
+.storyName{font-size:12px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.createPost{background:#fff;margin-top:9px;padding:14px;display:flex;gap:10px;align-items:center}
+.avatar{width:48px;height:48px;min-width:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;background:linear-gradient(135deg,#2864dc,#7d2bdc)}
+.postInput{flex:1;border:0;background:#f0f2f5;border-radius:24px;padding:13px 17px;outline:0}
+.post{background:#fff;margin-top:9px;padding:16px 15px 9px}
+.postHeader{display:flex;align-items:center;gap:10px;position:relative}
+.postAvatar{width:50px;height:50px;min-width:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:18px}
+.pink{background:linear-gradient(135deg,#ec258f,#8b28d8)}.blue{background:linear-gradient(135deg,#2864dc,#5133c9)}.green{background:linear-gradient(135deg,#0d9f69,#2fc95c)}.orange{background:linear-gradient(135deg,#ff7200,#ffad00)}.red{background:linear-gradient(135deg,#ef3150,#9b1dbd)}
+.userInfo{line-height:1.2}.userName{font-weight:bold}.postTime{font-size:12px;color:#777;margin-top:3px}.menuBtn{margin-left:auto;border:0;background:transparent;font-size:23px;width:35px;height:35px;border-radius:50%}
+.menuBtn:hover{background:#eee}.postMenu{display:none;position:absolute;right:5px;top:52px;width:230px;background:#fff;border-radius:14px;box-shadow:0 8px 30px #0003;overflow:hidden;z-index:20}
+.postMenu button{display:block;width:100%;padding:13px;border:0;background:#fff;text-align:left}.postMenu button:hover{background:#f2f3f5}.danger{color:#e32645!important}
+.postText{font-size:16px;line-height:1.45;margin:15px 0}
+.postImage{width:100%;height:310px;object-fit:cover;border-radius:15px;display:block}
+.postActions{display:flex;justify-content:space-around;border-top:1px solid #eee;margin-top:9px;padding-top:7px}
+.action{border:0;background:transparent;color:#555;font-weight:bold;padding:9px;border-radius:9px}.action:hover{background:#f1f2f4}.liked{color:#e62855!important}
+.comments{display:none;border-top:1px solid #eee;margin-top:5px;padding-top:9px}.comment{background:#f1f2f5;border-radius:13px;padding:9px 12px;margin-bottom:6px;font-size:14px}.commentInput{width:100%;border:0;background:#f1f2f5;border-radius:20px;padding:11px 14px;outline:0}
+.profile{background:#fff;padding:20px 15px}.profileTop{display:flex;gap:16px;align-items:center}.profileAvatar{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#2864dc,#9b27c9);display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:bold}.profileName{font-size:22px;font-weight:bold}.bio{color:#555;margin-top:5px}.stats{display:flex;justify-content:space-around;text-align:center;margin:20px 0;padding:15px 0;border-top:1px solid #eee;border-bottom:1px solid #eee}.stats b{display:block;font-size:18px}.profileBtns{display:flex;gap:8px}.profileBtns button{flex:1;border:0;border-radius:10px;padding:11px;background:#2864dc;color:#fff;font-weight:bold}.profileBtns button.secondary{background:#eee;color:#222}
+.sectionTitle{padding:16px;font-size:20px;font-weight:bold;background:#fff;margin-top:9px}.searchBox{background:#fff;padding:15px}.searchBox input{width:100%;border:0;background:#f0f2f5;border-radius:22px;padding:13px;outline:0}.result{background:#fff;padding:14px;border-top:1px solid #eee;display:flex;align-items:center;gap:10px}
+.empty{background:#fff;padding:40px;text-align:center;color:#777}
+.bottomNav{height:62px;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:space-around;align-items:center;position:sticky;bottom:0;z-index:90;margin-top:9px}
+.bottomNav button{border:0;background:transparent;font-size:21px}.bottomNav .active{color:#2864dc}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:300;align-items:center;justify-content:center;padding:20px}.modalBox{background:#fff;width:100%;max-width:430px;border-radius:20px;padding:20px}.modalBox h2{margin-bottom:15px}.modalBox textarea{width:100%;height:120px;border:1px solid #ddd;border-radius:12px;padding:12px;resize:none;outline:0}.modalBtns{display:flex;gap:8px;margin-top:10px}.modalBtns button{flex:1;border:0;padding:12px;border-radius:10px;background:#2864dc;color:#fff;font-weight:bold}.modalBtns .cancel{background:#eee;color:#222}
+@media(max-width:600px){.postImage{height:290px}}
+</style>
+</head>
+<body>
+
+<section id="loginScreen">
+<div class="loginBox">
+<div class="logoLogin">SAN</div>
+<div class="loginSubtitle">Sua rede social para compartilhar momentos.</div>
+<input id="email" class="input" type="email" placeholder="E-mail">
+<input id="password" class="input" type="password" placeholder="Senha">
+<button class="primaryBtn" onclick="entrar()">Entrar</button>
+<button class="secondaryBtn" onclick="criarConta()">Criar nova conta</button>
+</div>
+</section>
+
+<section id="app">
+<header class="topbar">
+<div class="logo">SAN</div>
+<div class="topActions">
+<button class="topButton" onclick="showPage('search')">🔍</button>
+<button class="topButton" onclick="alert('Você não tem novas notificações.')">♡</button>
+<button class="topButton" onclick="sair()">⇥</button>
+</div>
+</header>
+
+<main class="feed">
+
+<div id="home" class="page active">
+<div class="stories">
+<div class="story"><div class="storyAvatar"><div class="storyAvatarInner">L</div></div><div class="storyName">Seu story</div></div>
+<div class="story"><div class="storyAvatar"><div class="storyAvatarInner">M</div></div><div class="storyName">Marina</div></div>
+<div class="story"><div class="storyAvatar"><div class="storyAvatarInner">G</div></div><div class="storyName">Gabriel</div></div>
+<div class="story"><div class="storyAvatar"><div class="storyAvatarInner">J</div></div><div class="storyName">Julia</div></div>
+<div class="story"><div class="storyAvatar"><div class="storyAvatarInner">C</div></div><div class="storyName">Carlos</div></div>
+<div class="story"><div class="storyAvatar"><div class="storyAvatarInner">A</div></div><div class="storyName">Amanda</div></div>
+</div>
+
+<div class="createPost">
+<div class="avatar">L</div>
+<input class="postInput" placeholder="O que está acontecendo?" onclick="abrirCriacao()">
+</div>
+
+<div id="posts"></div>
+</div>
+
+<div id="search" class="page">
+<div class="sectionTitle">Pesquisar</div>
+<div class="searchBox"><input id="searchInput" placeholder="Pesquisar pessoas..." oninput="pesquisar()"></div>
+<div id="results"></div>
+</div>
+
+<div id="messages" class="page">
+<div class="sectionTitle">Mensagens</div>
+<div class="empty">💬<br><br>Nenhuma conversa ainda.</div>
+</div>
+
+<div id="profile" class="page">
+<div class="profile">
+<div class="profileTop">
+<div class="profileAvatar">L</div>
+<div>
+<div class="profileName">Lucas</div>
+<div class="bio">Vivendo, criando e compartilhando no SAN. 💙</div>
+</div>
+</div>
+<div class="stats">
+<div><b id="pubCount">0</b>Publicações</div>
+<div><b id="followers">128</b>Seguidores</div>
+<div><b id="following">96</b>Seguindo</div>
+</div>
+<div class="profileBtns">
+<button onclick="editarPerfil()">Editar perfil</button>
+<button class="secondary" onclick="alert('Configurações do perfil')">⚙</button>
+</div>
+</div>
+<div class="sectionTitle">Suas publicações</div>
+<div id="myPosts"></div>
+</div>
+
+<nav class="bottomNav">
+<button id="navHome" class="active" onclick="showPage('home')">🏠</button>
+<button onclick="showPage('search')">🔎</button>
+<button onclick="abrirCriacao()">＋</button>
+<button onclick="showPage('messages')">💬</button>
+<button onclick="showPage('profile')">👤</button>
+</nav>
+</main>
+</section>
+
+<div id="createModal" class="modal">
+<div class="modalBox">
+<h2>Criar publicação</h2>
+<textarea id="newPostText" placeholder="O que está acontecendo?"></textarea>
+<div class="modalBtns">
+<button class="cancel" onclick="fecharCriacao()">Cancelar</button>
+<button onclick="criarPost()">Publicar</button>
+</div>
+</div>
+</div>
+
+<script>
+const defaultPosts=[
+{id:1,user:"Marina Silva",initial:"M",cls:"pink",time:"Há 15 minutos",text:"Um novo dia, novas ideias e muitos momentos para compartilhar! 💙",image:"https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=900&q=80",mine:false},
+{id:2,user:"Gabriel Souza",initial:"G",cls:"blue",time:"Há 32 minutos",text:"Hoje foi um daqueles dias que merecem ser registrados. 📸✨",image:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",mine:false},
+{id:3,user:"Julia Martins",initial:"J",cls:"green",time:"Há 1 hora",text:"Pequenos momentos também podem virar grandes lembranças. 🌿",image:"https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=900&q=80",mine:false},
+{id:4,user:"Carlos Oliveira",initial:"C",cls:"orange",time:"Há 2 horas",text:"O SAN está ficando cada vez mais completo! 🚀",image:"https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=80",mine:false},
+{id:5,user:"Amanda Costa",initial:"A",cls:"red",time:"Há 3 horas",text:"Compartilhando um pouco do meu dia com vocês. ❤️",image:"https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80",mine:false}
+];
+
+let posts=JSON.parse(localStorage.getItem("sanPosts")||"null")||defaultPosts;
+let liked=JSON.parse(localStorage.getItem("sanLiked")||"[]");
+
+function save(){localStorage.setItem("sanPosts",JSON.stringify(posts));localStorage.setItem("sanLiked",JSON.stringify(liked));}
+
+function renderPosts(){
+ const box=document.getElementById("posts"); box.innerHTML="";
+ posts.forEach(p=>{
+  const isLiked=liked.includes(p.id);
+  box.insertAdjacentHTML("beforeend",`
+  <article class="post" id="post-${p.id}">
+   <div class="postHeader">
+    <div class="postAvatar ${p.cls}">${p.initial}</div>
+    <div class="userInfo"><div class="userName">${p.user}${p.user!=="Lucas"?" ✓":""}</div><div class="postTime">${p.time}</div></div>
+    <button class="menuBtn" onclick="toggleMenu(this)">⋮</button>
+    <div class="postMenu">
+      <button onclick="interesse(this)">👍 Tenho interesse</button>
+      <button onclick="naoInteresse(this)">👎 Não tenho interesse</button>
+      ${p.mine?'<button onclick="excluirPost('+p.id+')">🗑️ Excluir publicação</button>':''}
+      <button onclick="alert('Publicação denunciada.')">⚠️ Denunciar publicação</button>
+      <button class="danger" onclick="alert('Usuário bloqueado.')">🚫 Bloquear usuário</button>
+    </div>
+   </div>
+   <div class="postText">${escapeHtml(p.text)}</div>
+   ${p.image?`<img class="postImage" src="${p.image}" alt="Publicação">`:""}
+   <div class="postActions">
+    <button class="action ${isLiked?'liked':''}" onclick="curtir(${p.id},this)">${isLiked?'♥ Curtido':'♡ Curtir'}</button>
+    <button class="action" onclick="comentarios(this)">💬 Comentar</button>
+    <button class="action" onclick="compartilhar()">↗ Compartilhar</button>
+   </div>
+   <div class="comments">
+    <div class="comment"><strong>Lucas</strong> Muito legal! 💙</div>
+    <input class="commentInput" placeholder="Escreva um comentário..." onkeydown="enviarComentario(event,this)">
+   </div>
+  </article>`);
+ });
+ document.getElementById("pubCount").textContent=posts.filter(p=>p.mine).length;
+ renderMyPosts();
+}
+
+function renderMyPosts(){
+ const box=document.getElementById("myPosts");
+ const mine=posts.filter(p=>p.mine);
+ box.innerHTML=mine.length?mine.map(p=>`<div class="post"><div class="postHeader"><div class="postAvatar blue">L</div><div class="userInfo"><div class="userName">Lucas</div><div class="postTime">${p.time}</div></div></div><div class="postText">${escapeHtml(p.text)}</div></div>`).join(""):'<div class="empty">Você ainda não publicou nada.</div>';
+}
+
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+
+function entrar(){
+ if(!document.getElementById("email").value.trim()||!document.getElementById("password").value.trim()){alert("Preencha o e-mail e a senha.");return}
+ document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";renderPosts();
+}
+function criarConta(){alert("Cadastro do SAN: em uma próxima etapa podemos conectar esta tela ao formulário completo de cadastro.");}
+function sair(){document.getElementById("app").style.display="none";document.getElementById("loginScreen").style.display="flex";}
+function showPage(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".bottomNav button").forEach(b=>b.classList.remove("active"));
+ if(id==="home")document.getElementById("navHome").classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function curtir(id,button){
+ if(liked.includes(id))liked=liked.filter(x=>x!==id);else liked.push(id);
+ save();renderPosts();
+}
+function comentarios(button){
+ const c=button.closest(".post").querySelector(".comments");
+ c.style.display=c.style.display==="block"?"none":"block";
+}
+function enviarComentario(e,input){
+ if(e.key!=="Enter"||!input.value.trim())return;
+ const div=document.createElement("div");div.className="comment";div.innerHTML="<strong>Lucas</strong> "+escapeHtml(input.value.trim());
+ input.parentElement.insertBefore(div,input);input.value="";
+}
+function compartilhar(){
+ if(navigator.share)navigator.share({title:"SAN",text:"Confira esta publicação no SAN!"});
+ else alert("Publicação pronta para compartilhar!");
+}
+function toggleMenu(button){
+ const menu=button.parentElement.querySelector(".postMenu");
+ document.querySelectorAll(".postMenu").forEach(m=>{if(m!==menu)m.style.display="none"});
+ menu.style.display=menu.style.display==="block"?"none":"block";
+}
+function interesse(button){button.closest(".postMenu").style.display="none";alert("Vamos mostrar mais publicações parecidas com esta.");}
+function naoInteresse(button){const post=button.closest(".post");button.closest(".postMenu").style.display="none";post.remove();}
+function excluirPost(id){posts=posts.filter(p=>p.id!==id);save();renderPosts();}
+function abrirCriacao(){document.getElementById("createModal").style.display="flex";document.getElementById("newPostText").focus();}
+function fecharCriacao(){document.getElementById("createModal").style.display="none";}
+function criarPost(){
+ const text=document.getElementById("newPostText").value.trim();
+ if(!text){alert("Digite algo para publicar.");return}
+ posts.unshift({id:Date.now(),user:"Lucas",initial:"L",cls:"blue",time:"Agora",text,image:"",mine:true});
+ save();document.getElementById("newPostText").value="";fecharCriacao();showPage("home");renderPosts();
+}
+function editarPerfil(){alert("Aqui podemos adicionar nome, foto e biografia editáveis.");}
+function pesquisar(){
+ const q=document.getElementById("searchInput").value.toLowerCase().trim();
+ const users=["Marina Silva","Gabriel Souza","Julia Martins","Carlos Oliveira","Amanda Costa","Lucas"];
+ const result=document.getElementById("results");
+ const found=users.filter(u=>u.toLowerCase().includes(q));
+ result.innerHTML=found.map(u=>`<div class="result"><div class="avatar">${u[0]}</div><b>${u}</b></div>`).join("")||'<div class="empty">Nenhuma pessoa encontrada.</div>';
+}
+document.addEventListener("click",e=>{
+ if(!e.target.classList.contains("menuBtn"))document.querySelectorAll(".postMenu").forEach(m=>m.style.display="none");
+});
+renderPosts();
+</script>
+</body>
+</html>
